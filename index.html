@@ -23,6 +23,7 @@
             type="text"
             placeholder="VD: Sơn Đặng"
             class="form-control"
+            rules="required"
           />
           <span class="form-message"></span>
         </div>
@@ -35,6 +36,7 @@
             type="text"
             placeholder="VD: email@domain.com"
             class="form-control"
+            rules="required|email"
           />
           <span class="form-message"></span>
         </div>
@@ -47,20 +49,7 @@
             type="password"
             placeholder="Nhập mật khẩu"
             class="form-control"
-          />
-          <span class="form-message"></span>
-        </div>
-
-        <div class="form-group">
-          <label for="password_confirmation" class="form-label"
-            >Nhập lại mật khẩu</label
-          >
-          <input
-            id="password_confirmation"
-            name="password_confirmation"
-            placeholder="Nhập lại mật khẩu"
-            type="password"
-            class="form-control"
+            rules="required|min:6"
           />
           <span class="form-message"></span>
         </div>

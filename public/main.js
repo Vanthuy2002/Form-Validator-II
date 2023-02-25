@@ -1,4 +1,4 @@
-function Validator(selector) {
+function Validator(selector, options = {}) {
   function getParent(currentEl, selector) {
     while (currentEl.parentElement) {
       if (currentEl.parentElement.closest(selector)) {
@@ -72,7 +72,9 @@ function Validator(selector) {
       }
 
       //lắng nghe sự kiện blur trong input
-      input.onblur = (e) => {
+      input.onblur = handleValidate;
+      input.oninput = clearMess;
+      function handleValidate(e) {
         let valueOfFormRules = formRules[e.target.name];
 
         let errMsg;
@@ -91,20 +93,45 @@ function Validator(selector) {
             formMess.textContent = errMsg;
           }
         }
-      };
 
-      //   su kien oninput;
-      input.oninput = (e) => {
+        return !errMsg;
+      }
+
+      function clearMess(e) {
         let formGroup = getParent(e.target, ".form-group");
         if (formGroup.classList.contains("invalid")) {
           formGroup.classList.remove("invalid");
         }
         let formMess = formGroup.querySelector(".form-message");
         formMess.textContent = "";
-      };
+      }
     }
-    //Nhận lại được object có key là name trong thẻ input, value tương ứng là các hàm đã định nghĩa
   }
+  //Nhận lại được object có key là name trong thẻ input, value tương ứng là các hàm đã định nghĩa
+  formElement.onsubmit = (e) => {
+    e.preventDefault();
+    let inputs = formElement.querySelectorAll("input[name][rules]");
+
+    //Lặp qua các thẻ input
+    let isValid = true;
+    for (let input of inputs) {
+      if (!handleValidate({ target: input })) {
+        isValid = false;
+      }
+    }
+    if (isValid) {
+      if (typeof options.onSubmit === "function") {
+        return options.onSubmit();
+      }
+
+      formElement.submit();
+    }
+  };
 }
 
-Validator("#form-1");
+Validator("#form-1", {
+  onSubmit: function () {
+    //Lấy ra toàn bộ value, => gọi API
+    console.log("Pass");
+  },
+});

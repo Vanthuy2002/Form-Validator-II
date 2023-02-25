@@ -1,4 +1,13 @@
 function Validator(selector) {
+  function getParent(currentEl, selector) {
+    while (currentEl.parentElement) {
+      if (currentEl.parentElement.closest(selector)) {
+        return currentEl.parentElement;
+      }
+      currentEl = parentElement;
+    }
+  }
+
   let formRules = {};
 
   let ValidatorRules = {
@@ -25,8 +34,12 @@ function Validator(selector) {
   //Chỉ xử lý khi lấy được form ra
   if (formElement) {
     let inputs = formElement.querySelectorAll("input[name][rules]");
+
+    //Lặp qua các thẻ input
     for (let input of inputs) {
+      // cắt giá trị trong rules thành mảng
       let rules = input.getAttribute("rules").split("|");
+
       for (let rule of rules) {
         let isRulesHasValue = rule.includes(":");
         //Gán cho biến is...Value = true/false sau khi kiểm tra xem trong chuỗi rule có dấu : không
@@ -48,14 +61,49 @@ function Validator(selector) {
           ruleFunc = ruleFunc(ruleInfo[1]);
         }
 
+        //Kiểm tra xem value trong object có phải là Array không?
+        //Lần đầu chạy sẽ lọt vào else bởi chưa phải là mảng, sau đó sẽ tiến hành push vào
+        //mảng "key" trong object
         if (Array.isArray(formRules[input.name])) {
           formRules[input.name].push(ruleFunc);
         } else {
           formRules[input.name] = [ruleFunc];
         }
       }
+
+      //lắng nghe sự kiện blur trong input
+      input.onblur = (e) => {
+        let valueOfFormRules = formRules[e.target.name];
+
+        let errMsg;
+        valueOfFormRules.find((value) => {
+          errMsg = value(e.target.value);
+          return errMsg;
+        });
+
+        // Nếu có lỗi , render ra UI
+        if (errMsg) {
+          let formGroup = getParent(e.target, ".form-group");
+          if (formGroup) {
+            //Nếu có form-group thì lấy ra class mess, gán thông báo lỗi vào
+            formGroup.classList.add("invalid");
+            let formMess = formGroup.querySelector(".form-message");
+            formMess.textContent = errMsg;
+          }
+        }
+      };
+
+      //   su kien oninput;
+      input.oninput = (e) => {
+        let formGroup = getParent(e.target, ".form-group");
+        if (formGroup.classList.contains("invalid")) {
+          formGroup.classList.remove("invalid");
+        }
+        let formMess = formGroup.querySelector(".form-message");
+        formMess.textContent = "";
+      };
     }
-    console.log(formRules);
+    //Nhận lại được object có key là name trong thẻ input, value tương ứng là các hàm đã định nghĩa
   }
 }
 
